@@ -1,93 +1,209 @@
-# Global-Illumination-SoSe2026
+# Global Illumination Methods
 
+This is a minimal global illumination / ray tracing starter project for course exercises. The project is currently built with `C++14 + CMake + Qt5 Widgets`. When launched, it opens a GUI window and displays the rendered result of the default scene.
 
+The default entry point is `main.cpp`, which currently:
 
-## Getting started
+- creates a test scene via `SceneFactory`
+- uses `DirectLightingIntegrator` for direct lighting
+- displays the image through `Gui` / `Viewer`
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Quick Start
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+The repository already includes `glm`, so the main external requirements are:
 
-## Add your files
+- `CMake 3.10+`
+- a compiler with `C++14` support
+- `Qt5 Widgets`
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+The standard build flow is:
 
+```bash
+cmake -S . -B build
+cmake --build build -j
 ```
-cd existing_repo
-git remote add origin https://gitlab.inf.uni-konstanz.de/yurii.kokhanchuk/global-illumination-sose2026.git
-git branch -M main
-git push -uf origin main
+
+After building, run:
+
+- macOS / Linux
+
+```bash
+./build/global_illu
 ```
 
-## Integrate with your tools
+- Windows
 
-* [Set up project integrations](https://gitlab.inf.uni-konstanz.de/yurii.kokhanchuk/global-illumination-sose2026/-/settings/integrations)
+```powershell
+.\build\Release\global_illu.exe
+```
 
-## Collaborate with your team
+If you are using a single-config generator such as Ninja, the executable on Windows may also be located directly at `build\global_illu.exe`.
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+## Running on Different Systems
 
-## Test and Deploy
+### macOS
 
-Use the built-in continuous integration in GitLab.
+Recommended tools:
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+- Xcode Command Line Tools
+- CMake
+- Qt 5
 
-***
+If Qt 5 is installed but `cmake` still cannot find `Qt5Widgets`, specify the Qt install prefix manually:
 
-# Editing this README
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH="<Qt5 installation directory>"
+cmake --build build -j
+./build/global_illu
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+In many cases, `<Qt5 installation directory>` is the Qt `clang_64` directory or the Qt prefix installed by a package manager.
 
-## Suggestions for a good README
+### Linux
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+On Linux, you will need:
 
-## Name
-Choose a self-explaining name for your project.
+- `g++` or `clang++`
+- `cmake`
+- Qt 5 development packages
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+For Debian / Ubuntu, for example:
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```bash
+sudo apt update
+sudo apt install build-essential cmake qtbase5-dev
+cmake -S . -B build
+cmake --build build -j
+./build/global_illu
+```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+If you are running on a remote server, inside WSL, or in a headless environment, you will also need GUI forwarding or a desktop environment. Otherwise, the project may compile successfully but fail to open the Qt window.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### Windows
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Recommended setup:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- Visual Studio 2022
+- the `Desktop development with C++` workload
+- Qt 5, built for a compiler compatible with your Visual Studio installation
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Run the following in `x64 Native Tools Command Prompt for VS`:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```powershell
+cmake -S . -B build -DCMAKE_PREFIX_PATH="C:\Qt\5.x.x\msvc2019_64"
+cmake --build build --config Release
+.\build\Release\global_illu.exe
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+If your Qt installation is in a different location, replace `C:\Qt\5.x.x\msvc2019_64` with the actual path on your machine.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Common Issues
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### CMake cannot find Qt5Widgets
 
-## License
-For open source projects, say how it is licensed.
+The current `CMakeLists.txt` uses:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```cmake
+find_package(Qt5Widgets REQUIRED)
+```
+
+If Qt is installed but the package is still not found, the most common fix is to reconfigure with:
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH="<Qt5 installation directory>"
+```
+
+If you only have Qt 6 installed, the current repository configuration will not match it directly. In that case, you will need to adjust the `find_package(Qt5Widgets REQUIRED)` setup to use Qt 6 instead.
+
+### The project builds, but no window appears
+
+This is a Qt GUI application, not a command-line-only renderer. If your environment does not provide a graphical desktop or proper display forwarding, the application may not be able to show its window.
+
+### New source files are not being compiled
+
+If you add new `.cpp` or `.h` files, make sure to update `CMakeLists.txt` as well.
+
+## Rendering Pipeline
+
+The project follows roughly this flow:
+
+1. `Scene Setup`
+   - Geometry
+   - Materials
+   - Lights
+   - Camera
+
+2. `Image Sampling`
+   - choose pixel
+   - choose sample position(s) within the pixel
+
+3. `Primary Ray Generation`
+   - generate a camera ray for the current sample
+
+4. `Ray-Scene Intersection`
+   - intersect the ray with scene geometry
+
+5. `Visible Surface Determination`
+   - choose the closest valid hit
+   - if no hit: return background / environment
+
+6. `Surface Interaction Construction`
+   - build hit record
+   - position
+   - normal
+   - uv / local surface data
+   - material reference
+
+7. `Radiance Evaluation`
+   - compute outgoing radiance along the current viewing direction
+   - possible subcases:
+     - Direct Illumination
+     - Material / BSDF Evaluation
+     - Light Visibility Test
+     - Secondary Ray Generation
+     - Recursive / Stochastic Light Transport
+     - Volume / Medium Interaction
+
+8. `Image Update and Output`
+   - accumulate sample contribution
+   - write to pixel
+   - gamma correction / tone mapping
+   - display / save
+
+The default starter execution order can be summarized as:
+
+1. `SceneFactory` creates a test scene
+2. `Renderer` iterates over pixels
+3. `Camera` generates a primary ray for the current pixel
+4. `Scene::intersect()` finds the closest hit
+5. the geometry fills a `HitRecord`
+6. `DirectLightingIntegrator` computes radiance
+7. `Image` stores the result
+8. `Viewer` displays the image in the GUI
+
+## Code Organization
+
+### Module Overview
+
+```text
+io/         # image output and model loading
+app/        # GUI, viewer, and scene presets
+core/       # math-adjacent rendering basics, such as ray, constants, etc.
+scene/      # camera, scene container, hit record
+geometry/   # primitives and geometric hierarchies
+shading/    # materials, textures, lights
+render/     # renderer and integrators
+accel/      # acceleration structures, such as bbox, BVH, and octree
+```
+
+### Top-Level Layout
+
+```text
+.
+├── 3rd_party/      third-party libraries, currently including glm
+├── assets/         example assets
+├── include/        header files
+├── src/            source files
+├── CMakeLists.txt  build configuration
+└── main.cpp        program entry point
+```
