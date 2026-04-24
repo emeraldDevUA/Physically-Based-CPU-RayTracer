@@ -5,21 +5,23 @@
 
 #include "app/gui.h"
 #include "app/scene_factory.h"
+#include "geometry/sphere.h"
 #include "render/direct_lighting_integrator.h"
+
+
+constexpr int width = 800;
+constexpr int height = 600;
+constexpr int samplesPerPixel = 1;
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
 
-    const int width = 600;
-    const int height = 800;
-    const int samplesPerPixel = 1;
-
     SceneSetup setup = SceneFactory::createStarterScene(width, height);
 
-    DirectLightingIntegrator integrator(3, Color(0.08, 0.08, 0.10));
+    DirectLightingIntegrator integrator(10, Color(0.08, 0.08, 0.10));
 
     Gui window(width, height, setup.scene, setup.camera, integrator, samplesPerPixel);
     window.show();
 
-    return app.exec();
+    return QApplication::exec();
 }

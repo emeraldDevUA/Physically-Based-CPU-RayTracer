@@ -7,7 +7,7 @@
 #include "geometry/geometry.h"
 #include "shading/shading.h"
 
-SceneSetup SceneFactory::createStarterScene(int width, int height) {
+SceneSetup SceneFactory::createStarterScene(const int width, const int height) {
     Scene scene;
 
     auto red   = std::make_shared<LambertMaterial>(Color(0.8, 0.2, 0.2));
@@ -31,7 +31,7 @@ SceneSetup SceneFactory::createStarterScene(int width, int height) {
         Color(1.0, 1.0, 1.0),
         25.0));
 
-    Camera camera(
+    const Camera camera(
         glm::dvec3(0.0, 0.5, 1.5),   // eye
         glm::dvec3(0.0, 0.0, -4.0),  // target
         glm::dvec3(0.0, 1.0, 0.0),   // up

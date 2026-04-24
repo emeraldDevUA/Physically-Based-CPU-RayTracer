@@ -16,11 +16,11 @@ struct Ray {
 
     Ray(const glm::dvec3& o,
         const glm::dvec3& d,
-        double minT = constants::kEpsilon,
-        double maxT = constants::kInfinity)
+        const double minT = constants::kEpsilon,
+        const double maxT = constants::kInfinity)
         : origin(o), direction(d), tMin(minT), tMax(maxT) {}
 
-    glm::dvec3 at(double t) const {
+    glm::dvec3 at(const double t) const {
         return origin + t * direction;
     }
 };

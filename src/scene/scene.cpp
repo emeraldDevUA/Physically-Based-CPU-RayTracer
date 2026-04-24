@@ -9,13 +9,16 @@ void Scene::addPrimitive(const std::shared_ptr<Primitive>& primitive) {
 void Scene::addLight(const std::shared_ptr<Light>& light) {
     m_lights.push_back(light);
 }
-
 bool Scene::intersect(const Ray& ray, HitRecord& rec) const {
     bool hitAnything = false;
-    double closestSoFar = ray.tMax;
+    Ray closestRay = ray; // copy so we can shrink tMax
 
-    // TODO: Implement ray-scene intersection 
-    // by iterating over all primitives and finding the closest hit.
+    for (const auto& primitive : m_primitives) {
+        if (primitive->intersect(closestRay, rec)) {
+            hitAnything = true;
+            closestRay.tMax = rec.t; // only accept closer hits from now on
+        }
+    }
 
     return hitAnything;
 }

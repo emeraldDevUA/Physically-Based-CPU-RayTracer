@@ -15,13 +15,13 @@ Plane::Plane(const glm::dvec3& point,
       m_material(std::move(material)) {}
 
 bool Plane::intersect(const Ray& ray, HitRecord& rec) const {
-    double denom = glm::dot(m_normal, ray.direction);
+    const double denom = glm::dot(m_normal, ray.direction);
 
     if (std::abs(denom) < constants::kEpsilon) {
         return false;
     }
 
-    double t = glm::dot(m_point - ray.origin, m_normal) / denom;
+    const double t = glm::dot(m_point - ray.origin, m_normal) / denom;
     if (t < ray.tMin || t > ray.tMax) {
         return false;
     }
