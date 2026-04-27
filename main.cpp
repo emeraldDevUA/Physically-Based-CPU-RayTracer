@@ -9,9 +9,9 @@
 #include "render/direct_lighting_integrator.h"
 
 
-constexpr int width = 800;
-constexpr int height = 600;
-constexpr int samplesPerPixel = 1;
+constexpr int width = 1024;
+constexpr int height = 768;
+constexpr int samplesPerPixel = 3;
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);

@@ -34,9 +34,11 @@ Color LambertMaterial::albedo(const HitRecord& rec) const {
 Color LambertMaterial::evaluate(const HitRecord& rec,
                                 const glm::dvec3&,
                                 const glm::dvec3& wi) const {
-    double cosTheta = glm::dot(rec.shadingNormal, wi);
+
+    const double cosTheta = glm::dot(rec.shadingNormal, wi);
+    
     if (cosTheta <= 0.0) {
-        return Color(0.0, 0.0, 0.0);
+        return {0.0, 0.0, 0.0};
     }
 
     return albedo(rec) / constants::kPi;

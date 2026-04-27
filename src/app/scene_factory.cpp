@@ -14,6 +14,14 @@ SceneSetup SceneFactory::createStarterScene(const int width, const int height) {
     auto green = std::make_shared<LambertMaterial>(Color(0.2, 0.8, 0.2));
     auto gray  = std::make_shared<LambertMaterial>(Color(0.7, 0.7, 0.7));
 
+    auto metal_texture = std::make_shared<ImageTexture>("../../assets/textures/metal.png");
+    auto metal_mat = std::make_shared<LambertMaterial>(metal_texture);
+
+
+    scene.addPrimitive(std::make_shared<Sphere>(
+     glm::dvec3(1.2, -0.35, -2.9), 0.65, metal_mat));
+
+
     scene.addPrimitive(std::make_shared<Sphere>(
         glm::dvec3(-0.35, -0.10, -4.4), 0.9, red));
 

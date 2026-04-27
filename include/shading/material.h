@@ -47,7 +47,7 @@ public:
 
     // Self-emission. Default is black.
     virtual Color emission(const HitRecord&) const {
-        return Color(0.0, 0.0, 0.0);
+        return {0.0, 0.0, 0.0};
     }
 
     // Evaluate the scattering function f(wo, wi).
