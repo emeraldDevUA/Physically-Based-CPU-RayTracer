@@ -9,12 +9,12 @@
 #include "io/image.h"
 #include "render/renderer.h"
 
-Viewer::Viewer(int width,
-               int height,
+Viewer::Viewer(const int width,
+               const int height,
                const Scene& scene,
                const Camera& camera,
                const Integrator& integrator,
-               int samplesPerPixel,
+               const int samplesPerPixel,
                QLabel* durationLabel,
                QWidget* parent)
     : QWidget(parent),
@@ -30,16 +30,16 @@ Viewer::Viewer(int width,
 }
 
 void Viewer::renderScene() {
-    auto start = std::chrono::high_resolution_clock::now();
+    const auto start = std::chrono::high_resolution_clock::now();
 
     Image image(m_width, m_height);
-    Renderer renderer(m_samplesPerPixel);
+    const Renderer renderer(m_samplesPerPixel);
     renderer.render(m_scene, m_camera, m_integrator, image);
 
     m_image = image.qimage();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto durationMs =
+    const auto end = std::chrono::high_resolution_clock::now();
+    const auto durationMs =
         std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     if (m_durationLabel) {
@@ -72,5 +72,5 @@ void Viewer::paintEvent(QPaintEvent*) {
 }
 
 QSize Viewer::sizeHint() const {
-    return QSize(m_width, m_height);
+    return {m_width, m_height};
 }

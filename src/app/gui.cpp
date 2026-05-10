@@ -4,23 +4,23 @@
 
 #include "app/gui.h"
 
-Gui::Gui(int width,
-         int height,
+Gui::Gui(const int width,
+         const int height,
          const Scene& scene,
          const Camera& camera,
          const Integrator& integrator,
-         int samplesPerPixel,
-         QWindow* parent)
+         const int samplesPerPixel,
+         const QWindow* parent)
     : QMainWindow(nullptr) {
     Q_UNUSED(parent);
 
-    QToolBar* toolbar = new QToolBar(this);
+    auto* toolbar = new QToolBar(this);
     toolbar->setMovable(false);
 
     m_saveButton = new QPushButton("Save as ...", this);
     toolbar->addWidget(m_saveButton);
 
-    QWidget* spacer = new QWidget();
+    auto* spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolbar->addWidget(spacer);
 
@@ -44,7 +44,7 @@ Gui::Gui(int width,
     setCentralWidget(m_viewer);
 
     connect(m_saveButton, &QPushButton::clicked, [this]() {
-        QString filename = QFileDialog::getSaveFileName(
+        const QString filename = QFileDialog::getSaveFileName(
             this,
             tr("Save Image"),
             "render.png",
