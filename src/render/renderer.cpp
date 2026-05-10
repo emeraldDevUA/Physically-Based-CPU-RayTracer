@@ -4,19 +4,21 @@
 // kept only as a forward-compatible hook for later assignments.
 
 #include "render/renderer.h"
-
+#include <omp.h>
 #include "io/image.h"
 #include "render/integrator.h"
 #include "scene/camera.h"
 #include "scene/scene.h"
 
-Renderer::Renderer(int samplesPerPixel)
+Renderer::Renderer(const int samplesPerPixel)
     : m_samplesPerPixel(samplesPerPixel > 0 ? samplesPerPixel : 1) {}
 
 void Renderer::render(const Scene& scene,
                       const Camera& camera,
                       const Integrator& integrator,
                       Image& image) const {
+
+    #pragma omp parallel for schedule(dynamic, 16)
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
             Ray ray = camera.generateRay(x, y);

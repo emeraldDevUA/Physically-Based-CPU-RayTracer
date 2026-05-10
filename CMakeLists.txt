@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
 
 set(SOURCES
     main.cpp
@@ -37,6 +38,7 @@ set(SOURCES
 
     src/io/image.cpp
     src/io/obj_loader.cpp
+        src/geometry/mesh.cpp
 )
 
 set(HEADERS
@@ -75,6 +77,7 @@ set(HEADERS
 
     include/io/image.h
     include/io/obj_loader.h
+        include/geometry/Mesh.h
 )
 
 add_executable(global_illu ${SOURCES} ${HEADERS})
@@ -90,5 +93,6 @@ target_compile_definitions(global_illu PRIVATE
 
 target_link_libraries(global_illu
     Qt5::Widgets
+    OpenMP::OpenMP_CXX
     ${CMAKE_THREAD_LIBS_INIT}
 )

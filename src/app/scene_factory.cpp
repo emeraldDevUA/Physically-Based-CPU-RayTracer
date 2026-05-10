@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "geometry/geometry.h"
+#include "glm/ext/quaternion_trigonometric.hpp"
+#include "io/obj_loader.h"
 #include "shading/shading.h"
 
 SceneSetup SceneFactory::createStarterScene(const int width, const int height) {
@@ -14,13 +16,17 @@ SceneSetup SceneFactory::createStarterScene(const int width, const int height) {
     auto green = std::make_shared<LambertMaterial>(Color(0.2, 0.8, 0.2));
     auto gray  = std::make_shared<LambertMaterial>(Color(0.7, 0.7, 0.7));
 
-    auto metal_texture = std::make_shared<ImageTexture>("../../assets/textures/metal.png");
+    auto metal_texture = std::make_shared<ImageTexture>("../../assets/textures/img.png");
     auto metal_mat = std::make_shared<LambertMaterial>(metal_texture);
 
 
     scene.addPrimitive(std::make_shared<Sphere>(
      glm::dvec3(1.2, -0.35, -2.9), 0.65, metal_mat));
 
+
+    ObjLoader::load("../../assets/models/crystal.obj", scene, metal_mat,
+        vec3(-2, 0, -2), vec3(0.01),
+        glm::angleAxis(glm::radians(15.0f), vec3(0.0f, 1.0f, 0.0f)));
 
     scene.addPrimitive(std::make_shared<Sphere>(
         glm::dvec3(-0.35, -0.10, -4.4), 0.9, red));
@@ -39,9 +45,14 @@ SceneSetup SceneFactory::createStarterScene(const int width, const int height) {
         Color(1.0, 1.0, 1.0),
         25.0));
 
+    scene.addLight(std::make_shared<PointLight>(
+        glm::dvec3(-3.0, 4.0, 0.0),
+        Color(1.0, 1.0, 1.0),
+        15.0));
+
     const Camera camera(
-        glm::dvec3(0.0, 0.5, 1.5),   // eye
-        glm::dvec3(0.0, 0.0, -4.0),  // target
+        glm::dvec3(0.0, 1.5, 2.5),   // eye
+        glm::dvec3(0.0, 0.5, -0.0),  // target
         glm::dvec3(0.0, 1.0, 0.0),   // up
         45.0,                        // vertical FOV in degrees
         width,

@@ -27,9 +27,9 @@ public:
         const Camera& camera,
         const Integrator& integrator,
         int samplesPerPixel,
-        QWindow* parent = nullptr);
+        const QWindow* parent = nullptr);
 
-    ~Gui();
+    ~Gui() override;
 
 private:
     QLabel* m_durationText = nullptr;

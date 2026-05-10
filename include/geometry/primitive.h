@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "core/ray.h"
 #include "scene/hit_record.h"
 
@@ -15,4 +17,13 @@ public:
     virtual bool intersect(const Ray& ray, HitRecord& rec) const = 0;
 
     // Later directions may add bounding boxes or other acceleration helpers here.
+};
+
+
+class CompoundPrimitive : public Primitive {
+public:
+    ~CompoundPrimitive() override = default;
+
+    // Return true and fill rec when the ray hits this primitive.
+    virtual std::vector<HitRecord> intersect_all(const Ray& ray, HitRecord& rec) const = 0;
 };

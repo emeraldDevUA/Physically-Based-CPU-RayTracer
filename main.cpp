@@ -9,8 +9,8 @@
 #include "render/direct_lighting_integrator.h"
 
 
-constexpr int width = 1024;
-constexpr int height = 768;
+constexpr int width = 1600;
+constexpr int height = 900;
 constexpr int samplesPerPixel = 3;
 
 int main(int argc, char** argv) {
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 
     SceneSetup setup = SceneFactory::createStarterScene(width, height);
 
-    DirectLightingIntegrator integrator(10, Color(0.08, 0.08, 0.10));
+    DirectLightingIntegrator integrator(3, Color(0.08, 0.08, 0.10));
 
     Gui window(width, height, setup.scene, setup.camera, integrator, samplesPerPixel);
     window.show();
