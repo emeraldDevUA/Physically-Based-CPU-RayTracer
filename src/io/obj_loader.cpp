@@ -36,7 +36,8 @@ const vec3& translation, const vec3& scale, const quat& rotation)
         for (size_t f = 0; f < mesh.num_face_vertices.size(); ++f)
         {
             // OBJ faces can be quads or polygons, but after triangulation they are always 3
-            assert(mesh.num_face_vertices[f] == 3 && "Only triangulated meshes are supported");
+            if (mesh.num_face_vertices[f] != 3)
+                throw std::runtime_error("Only triangulated meshes are supported");
 
             auto getVertex = [&](const int corner) -> glm::dvec3
             {

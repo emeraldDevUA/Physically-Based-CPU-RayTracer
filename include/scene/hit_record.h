@@ -33,7 +33,7 @@ struct HitRecord {
     void setFaceNormal(const glm::dvec3& rayDirection,
                        const glm::dvec3& outwardNormal) {
         frontFace = glm::dot(rayDirection, outwardNormal) < 0.0;
-        geometricNormal = frontFace ? outwardNormal : -outwardNormal;
-        shadingNormal   = geometricNormal;
+        geometricNormal = outwardNormal;          // ← always outward
+        shadingNormal   = frontFace ? outwardNormal : -outwardNormal; // for lighting
     }
 };

@@ -16,6 +16,8 @@ public:
 
     bool intersect(const Ray& ray, HitRecord& rec) const override;
 
+    BBox bounds() const override;
+
 private:
     glm::dvec3 m_point;
     glm::dvec3 m_normal;

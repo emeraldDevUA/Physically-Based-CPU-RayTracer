@@ -29,10 +29,12 @@ public:
 
     bool intersect(const Ray& ray, HitRecord& rec) const override;
 
+    BBox bounds() const override;
 
     void set_translation(const glm::dvec3& translation);
     void set_scale(const glm::dvec3& scale);
     void set_rotation(const glm::dquat& rotation);
+
 private:
     glm::dvec3 m_a;
     glm::dvec3 m_b;
@@ -50,8 +52,8 @@ private:
 
     bool uvs_assigned;
 
-    glm::vec3 translation{0};
-    glm::vec3 scale{1};
+    vec3 translation{0};
+    vec3 scale{1};
     glm::quat rotation{1,0,0,0}; // should be a quat, but some odd version of glm is used here...
 
     std::shared_ptr<Material> m_material;

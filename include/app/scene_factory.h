@@ -15,7 +15,8 @@ public:
     // Minimal starter scene:
     // two spheres + one triangle floor + one point light
     static SceneSetup createStarterScene(int width, int height);
-
+    static SceneSetup createDielectricScene(int width, int height);
+    static SceneSetup createAircraftScene(int width, int height);
     // Extend here with more reusable scenes:
     // static SceneSetup createShadowTestScene(int width, int height);
     // static SceneSetup createReflectionTestScene(int width, int height);

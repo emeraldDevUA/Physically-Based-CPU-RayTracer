@@ -5,3 +5,6 @@
 
 double randomDouble();
 double randomDouble(double minValue, double maxValue);
+
+
+double randomFloat();

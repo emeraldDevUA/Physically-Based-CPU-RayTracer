@@ -11,6 +11,13 @@ Sphere::Sphere(const glm::dvec3& center,
     : m_center(center), m_radius(radius), m_material(std::move(material)) {}
 
 
+BBox Sphere::bounds() const
+{
+    const glm::dvec3 r(m_radius);
+    return {m_center - r, m_center + r};
+}
+
+
 bool Sphere::intersect(const Ray& ray, HitRecord& rec) const {
     const glm::dvec3 oc = ray.origin - m_center;
 

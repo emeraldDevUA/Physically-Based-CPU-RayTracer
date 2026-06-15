@@ -34,3 +34,26 @@ bool Plane::intersect(const Ray& ray, HitRecord& rec) const {
 
     return true;
 }
+
+BBox Plane::bounds() const
+{
+    constexpr double kInf = std::numeric_limits<double>::max();
+
+    // Find which axis the normal is most aligned to, keep that axis thin.
+    glm::dvec3 absN = glm::abs(m_normal);
+    int dominantAxis = 0;
+    if (absN.y > absN[dominantAxis]) dominantAxis = 1;
+    if (absN.z > absN[dominantAxis]) dominantAxis = 2;
+
+    glm::dvec3 minCorner(-kInf);
+    glm::dvec3 maxCorner( kInf);
+
+    // Thin slab on the dominant axis at the plane's offset position.
+    const double d = glm::dot(m_normal, m_point);
+    constexpr double kEps = 1e-4;
+    minCorner[dominantAxis] = d - kEps;
+    maxCorner[dominantAxis] = d + kEps;
+
+    return {minCorner, maxCorner};
+
+}
