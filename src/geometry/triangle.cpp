@@ -47,22 +47,21 @@ void Triangle::update_transformation()
 void Triangle::set_translation(const glm::dvec3& _translation)
 {
     this->translation = _translation;
-
     update_transformation();
 }
+
 void Triangle::set_scale(const glm::dvec3& _scale)
 {
     this->scale = _scale;
-
     update_transformation();
 }
+
 void Triangle::set_rotation(const glm::dquat& _rotation)
 {
     this->rotation = _rotation;
-
-
     update_transformation();
 }
+
 bool Triangle::intersect(const Ray& ray, HitRecord& rec) const {
 
 
@@ -106,9 +105,29 @@ bool Triangle::intersect(const Ray& ray, HitRecord& rec) const {
     {
         rec.uv = glm::dvec2(u, v);
     }else {
-        double w = 1.0 - u - v;
+        const double w = 1.0 - u - v;
         rec.uv = w * m_uv_a + u * m_uv_b + v * m_uv_c;
     }
 
     return true;
 }
+
+BBox Triangle::bounds() const
+{
+    glm::dvec3 minCorner = glm::min(glm::min(m_at, m_bt), m_ct);
+    glm::dvec3 maxCorner = glm::max(glm::max(m_at, m_bt), m_ct);
+
+    // Pad degenerate axis-aligned triangles (e.g. flat on XZ plane)
+    // so the BBox has non-zero volume and the slab test doesn't miss.
+    for (int i = 0; i < 3; ++i)
+    {
+        constexpr double kEps = 1e-6;
+        if (maxCorner[i] - minCorner[i] < kEps) {
+            minCorner[i] -= kEps;
+            maxCorner[i] += kEps;
+        }
+    }
+
+    return {minCorner, maxCorner};
+}
+

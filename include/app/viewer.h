@@ -34,7 +34,6 @@ private:
     // Render once into m_image.
     void renderScene();
 
-private:
     int m_width = 0;
     int m_height = 0;
 

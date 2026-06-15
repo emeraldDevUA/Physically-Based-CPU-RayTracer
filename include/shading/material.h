@@ -9,11 +9,13 @@
 #include "scene/hit_record.h"
 #include "shading/texture.h"
 
+
 enum class MaterialType {
     Lambert,
     Mirror,
     Dielectric,
     Emissive,
+    GGX,        // rough/metal unified
     Unknown
 };
 
@@ -33,6 +35,9 @@ struct MaterialSample {
     bool delta = false;
 };
 
+
+using glm::vec3;
+
 class Material {
 public:
     virtual ~Material() = default;
@@ -49,6 +54,12 @@ public:
     virtual Color emission(const HitRecord&) const {
         return {0.0, 0.0, 0.0};
     }
+
+    virtual glm::dvec3 normal(const HitRecord& rec) const
+    {
+        return rec.geometricNormal;
+    }
+
 
     // Evaluate the scattering function f(wo, wi).
     virtual Color evaluate(const HitRecord& rec,
@@ -86,4 +97,44 @@ public:
 
 private:
     std::shared_ptr<Texture> m_texture;
+};
+
+
+class GGXMaterial : public Material
+{
+public:
+    struct Params {
+        std::shared_ptr<Texture> albedo;
+        std::shared_ptr<Texture> roughness;  // R channel usually
+        std::shared_ptr<Texture> metallic;   // single channel
+        std::shared_ptr<Texture> normal;     // tangent-space normal map
+        // optional extras:
+        // std::shared_ptr<Texture> ao;       // ambient occlusion
+         std::shared_ptr<Texture> emission; // for emissive surfaces//
+    };
+
+    //explicit GGXMaterial(const Color& color);
+    explicit GGXMaterial(const std::shared_ptr<Texture>& albedo);
+    explicit GGXMaterial(Params params);  // full PBR constructor
+
+    MaterialType type() const override { return MaterialType::GGX; }
+
+    Color      albedo    (const HitRecord& rec) const override;
+    Color      emission    (const HitRecord& rec) const override;
+    double     roughness (const HitRecord& rec) const;
+    double     metallic  (const HitRecord& rec) const;
+    glm::dvec3 normal    (const HitRecord& rec) const;
+
+    Color evaluate(const HitRecord& rec,
+                   const glm::dvec3& wo,
+                   const glm::dvec3& wi) const override;
+
+    MaterialSample sample(const HitRecord& rec,
+                          const glm::dvec3& wo) const override;
+
+    double pdf(const HitRecord& rec,
+               const glm::dvec3& wo,
+               const glm::dvec3& wi) const override;
+private:
+    Params m_params;
 };

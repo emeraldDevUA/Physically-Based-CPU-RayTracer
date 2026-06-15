@@ -20,3 +20,10 @@ double randomDouble() {
 double randomDouble(double minValue, double maxValue) {
     return minValue + (maxValue - minValue) * randomDouble();
 }
+
+
+double randomFloat()
+{
+    static thread_local std::uniform_real_distribution<float> distribution(0.0, 1.0);
+    return distribution(rng);
+}

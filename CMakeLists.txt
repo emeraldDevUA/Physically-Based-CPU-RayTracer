@@ -39,6 +39,11 @@ set(SOURCES
     src/io/image.cpp
     src/io/obj_loader.cpp
         src/geometry/mesh.cpp
+        src/shading/ggx_material.cpp
+        src/scene/skybox.cpp
+        src/shading/mirror_material.cpp
+        src/shading/dielectric_material.cpp
+        src/shading/emissive_material.cpp
 )
 
 set(HEADERS
@@ -78,6 +83,10 @@ set(HEADERS
     include/io/image.h
     include/io/obj_loader.h
         include/geometry/Mesh.h
+        include/scene/skybox.h
+        include/shading/mirror_material.h
+        include/shading/dielectric_material.h
+        include/shading/emissive_material.h
 )
 
 add_executable(global_illu ${SOURCES} ${HEADERS})
