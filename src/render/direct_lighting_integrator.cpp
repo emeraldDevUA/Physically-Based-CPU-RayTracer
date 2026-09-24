@@ -31,7 +31,7 @@ Color DirectLightingIntegrator::Li(const Ray& ray,
 
     Color result = rec.material ? rec.material->emission(rec) : Color(0.0, 0.0, 0.0);
 
-    glm::dvec3 wo = -ray.direction;
+    dvec3 wo = -ray.direction;
 
     for (const auto& lightBase : scene.lights()) {
         const auto pointLight = std::dynamic_pointer_cast<PointLight>(lightBase);
@@ -39,9 +39,9 @@ Color DirectLightingIntegrator::Li(const Ray& ray,
             continue;
         }
 
-        const glm::dvec3 lightVec = pointLight->position() - rec.position; // note: reversed from yours
+        const dvec3 lightVec = pointLight->position() - rec.position; // note: reversed from yours
         const double distToLight  = glm::length(lightVec);
-        const glm::dvec3 wi       = lightVec / distToLight; // unit direction toward light
+        const dvec3 wi       = lightVec / distToLight; // unit direction toward light
 
         // Shadow ray — offset origin slightly to avoid self-intersection
         const Ray shadowRay{

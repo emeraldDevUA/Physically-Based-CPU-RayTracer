@@ -29,6 +29,7 @@ Mesh::Mesh(vector<Triangle> triangles,
         t.set_scale(scale);
         this->triangles.push_back(std::make_shared<Triangle>(std::move(t)));
     }
+    build();
 }
 
 bool Mesh::intersect(const Ray& ray, HitRecord& rec) const
@@ -65,4 +66,7 @@ void Mesh::build()
     m_bvh = std::make_unique<BVH>();
     m_bvh->build(std::vector<std::shared_ptr<Primitive>>(
         triangles.begin(), triangles.end()));
+
+    m_bvh->dumpWireframeObj("bvh_debug.obj");        // full tree
+    m_bvh->dumpWireframeObj("bvh_leaves.obj", 3);    // just top 3 levels, for a coarse look
 }

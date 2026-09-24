@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(global_illu)
 
-set(CMAKE_CXX_STANDARD 14)
+project(global_illu LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -43,7 +44,8 @@ set(SOURCES
         src/scene/skybox.cpp
         src/shading/mirror_material.cpp
         src/shading/dielectric_material.cpp
-        src/shading/emissive_material.cpp
+        src/shading/blinn_phong_material.cpp
+        src/geometry/box.cpp
 )
 
 set(HEADERS
@@ -86,7 +88,10 @@ set(HEADERS
         include/scene/skybox.h
         include/shading/mirror_material.h
         include/shading/dielectric_material.h
-        include/shading/emissive_material.h
+        include/shading/blinn_phong_material.h
+        include/shading/auxhiliary_methods.h
+        include/shading/ggx_material.h
+        include/geometry/box.h
 )
 
 add_executable(global_illu ${SOURCES} ${HEADERS})
@@ -99,6 +104,7 @@ target_include_directories(global_illu PRIVATE
 target_compile_definitions(global_illu PRIVATE
     PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
+
 
 target_link_libraries(global_illu
     Qt5::Widgets

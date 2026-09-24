@@ -45,7 +45,7 @@ void Viewer::renderScene() {
     if (m_durationLabel) {
         m_durationLabel->setText(
             QString("Resolution:%1 x %2 Render time: %3 seconds %4 samples per pixel)")
-                .arg(width()).arg(height())
+                .arg(m_image.width()).arg(m_image.height())
                 .arg(static_cast<float>(durationMs)/1000.0)
                 .arg(m_samplesPerPixel)
         );
