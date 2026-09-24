@@ -4,7 +4,9 @@
 
 #include <glm/glm.hpp>
 #include "core/ray.h"
-class BBox {
+
+class BBox
+{
 public:
     BBox();
     BBox(const glm::dvec3& minCorner, const glm::dvec3& maxCorner);
@@ -12,9 +14,9 @@ public:
     const glm::dvec3& min() const { return m_min; }
     const glm::dvec3& max() const { return m_max; }
 
-    glm::dvec3 centroid()    const { return (m_min + m_max) * 0.5; }
-    double     surfaceArea() const;
-    int        maxExtentAxis() const;
+    glm::dvec3 centroid() const { return (m_min + m_max) * 0.5; }
+    double surfaceArea() const;
+    int maxExtentAxis() const;
 
     bool intersect(const Ray& ray, double tMin, double tMax) const;
 

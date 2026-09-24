@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <cmath>
 
-Sphere::Sphere(const glm::dvec3& center,
+Sphere::Sphere(const dvec3& center,
                const double radius,
                std::shared_ptr<Material> material)
     : m_center(center), m_radius(radius), m_material(std::move(material)) {}
@@ -13,13 +13,13 @@ Sphere::Sphere(const glm::dvec3& center,
 
 BBox Sphere::bounds() const
 {
-    const glm::dvec3 r(m_radius);
+    const dvec3 r(m_radius);
     return {m_center - r, m_center + r};
 }
 
 
 bool Sphere::intersect(const Ray& ray, HitRecord& rec) const {
-    const glm::dvec3 oc = ray.origin - m_center;
+    const dvec3 oc = ray.origin - m_center;
 
     const double a = glm::dot(ray.direction, ray.direction);
     const double h = glm::dot(oc, ray.direction);
@@ -52,11 +52,10 @@ bool Sphere::intersect(const Ray& ray, HitRecord& rec) const {
     // Spherical UV mapping
     const glm::dvec3 n = outwardNormal;
 
-    constexpr double pi_value = 3.14159265358979323846;
 
     const double theta = std::acos(-n.y);
-    const double phi   = std::atan2(-n.z, n.x) + pi_value;
-    rec.uv = glm::dvec2(phi / (2.0 * pi_value), theta / pi_value);
+    const double phi   = std::atan2(-n.z, n.x) + constants::kPi;
+    rec.uv = glm::dvec2(phi / (2.0 * constants::kPi), theta / constants::kPi);
 
     return true;
 }

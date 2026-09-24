@@ -5,6 +5,7 @@
 
 #include "core/random.h"
 #include "scene/scene.h"
+#include "shading/ggx_material.h"
 #include "shading/material.h"
 
 WhittedIntegrator::WhittedIntegrator(int maxDepth, const Color& background)
@@ -52,50 +53,75 @@ Color WhittedIntegrator::Li(const Ray& initialRay, const Scene& scene, int) cons
         {
             for (const auto& light : scene.lights())
             {
-                auto pointLight =
-                    std::dynamic_pointer_cast<PointLight>(light);
+                // --- Point light path (unchanged) ---
+                if (const auto pointLight =
+                    std::dynamic_pointer_cast<PointLight>(light))
+                {
+                    dvec3 lightVec = pointLight->position() - rec.position;
+                    double distToLight = glm::length(lightVec);
+                    double invDist = 1.0 / distToLight;
+                    dvec3 wi = lightVec * invDist;
 
-                if (!pointLight)
-                    continue;
+                    Ray shadowRay{
+                        rec.position + rec.geometricNormal * constants::kEpsilon,
+                        wi,
+                        constants::kEpsilon,
+                        distToLight - constants::kEpsilon
+                    };
 
-                glm::dvec3 lightVec =
-                    pointLight->position() - rec.position;
+                    HitRecord shadowRec;
+                    if (scene.intersect(shadowRay, shadowRec))
+                        continue;
 
-                double distToLight =
-                    glm::length(lightVec);
+                    double cosTheta = std::max(0.0, glm::dot(rec.geometricNormal, wi));
+                    double attenuation = invDist * invDist;
+                    Color brdf = material->evaluate(rec, -ray.direction, wi);
 
-                double invDist = 1.0 / distToLight;
-                glm::dvec3 wi = lightVec * invDist;
+                    radiance +=
+                        throughput * brdf * pointLight->intensity() * cosTheta * attenuation;
+                }
+                // --- Area light path ---
+                else if (const auto areaLight =
+                    std::dynamic_pointer_cast<RectLight>(light))
+                {
+                    const int N = 4; // e.g. 4, 8, 16...
+                    Color Lo(0.0);
 
-                Ray shadowRay{
-                    rec.position + rec.geometricNormal * constants::kEpsilon,
-                    wi,
-                    constants::kEpsilon,
-                    distToLight - constants::kEpsilon
-                };
+                    for (int i = 0; i < N; i++)
+                    {
+                        const Light::Sample ls =
+                            areaLight->samplePoint(randomFloat(), randomFloat());
 
-                HitRecord shadowRec;
+                        dvec3 toLight = ls.position - rec.position;
+                        double distSq = glm::dot(toLight, toLight);
+                        double dist = std::sqrt(distSq);
+                        dvec3 wi = toLight / dist;
 
-                if (scene.intersect(shadowRay, shadowRec))
-                    continue;
+                        double cosTheta = std::max(0.0, glm::dot(rec.geometricNormal, wi));
+                        double cosLight = std::max(0.0, glm::dot(ls.normal, -wi));
 
-                double cosTheta =
-                    std::max(
-                        0.0,
-                        glm::dot(rec.geometricNormal, wi)
-                    );
+                        if (cosTheta < 1e-9 || cosLight < 1e-9)
+                            continue;
 
-                double attenuation = invDist * invDist;
+                        Ray shadowRay{
+                            rec.position + rec.geometricNormal * constants::kEpsilon,
+                            wi,
+                            constants::kEpsilon,
+                            dist - constants::kEpsilon
+                        };
 
-                Color brdf =
-                    material->evaluate(rec, -ray.direction, wi);
+                        HitRecord shadowRec;
+                        if (scene.intersect(shadowRay, shadowRec))
+                            continue;
 
-                radiance +=
-                    throughput *
-                    brdf *
-                    pointLight->intensity() *
-                    cosTheta *
-                    attenuation;
+                        double G = (cosTheta * cosLight) / distSq;
+                        Color brdf = material->evaluate(rec, -ray.direction, wi);
+
+                        Lo += brdf * ls.emission * (G / ls.pdf);
+                    }
+
+                    radiance += throughput * (Lo / static_cast<double>(N));
+                }
             }
         }
 
@@ -108,13 +134,18 @@ Color WhittedIntegrator::Li(const Ray& initialRay, const Scene& scene, int) cons
         if (material->type() == MaterialType::Lambert)
             break;
 
+
         MaterialSample ms = material->sample(rec, -ray.direction);
 
         if (!ms.valid) break;
 
         throughput *= ms.weight;
 
-        glm::dvec3 offsetNormal =
+        throughput.r = std::min(throughput.r, 10.0);
+        throughput.g = std::min(throughput.g, 10.0);
+        throughput.b = std::min(throughput.b, 10.0);
+
+        dvec3 offsetNormal =
             glm::dot(ms.wi, rec.geometricNormal) > 0.0 ? rec.geometricNormal : -rec.geometricNormal;
 
         ray = Ray{
@@ -124,10 +155,10 @@ Color WhittedIntegrator::Li(const Ray& initialRay, const Scene& scene, int) cons
         };
 
 
-        if (depth >= 3)
+        if (depth > 1)
         {
-            float q = 1.0f - std::max({throughput.r, throughput.g, throughput.b});
-            q = glm::clamp(q, 0.05f, 0.95f);
+            auto q = static_cast<float>(1.0f - std::max({throughput.r, throughput.g, throughput.b}));
+            q = clamp(q, 0.05f, 0.95f);
             // never kill everything, never keep everything
             if (randomFloat() < q)
                 break; // ray dies

@@ -1,34 +1,13 @@
-//
-// Created by Asus on 5/16/2026.
-//
-
 #include <glm/glm.hpp>
 
-#include "shading/material.h"
+#include "shading/ggx_material.h"
+
+#include <ostream>
+
 #include "core/constants.h"
 #include "core/random.h"
 
-// Builds an arbitrary but consistent tangent frame from just a normal.
-// Uses Frisvad / Hughes-Möller to pick a stable perpendicular vector.
-static void buildTBN(const glm::dvec3& N,
-                     glm::dvec3& T,
-                     glm::dvec3& B)
-{
-    // Frisvad's method — numerically stable except near (0, 0, -1)
-    if (N.z < -0.9999999)
-    {
-        T = glm::dvec3(0.0, -1.0, 0.0);
-        B = glm::dvec3(-1.0, 0.0, 0.0);
-        return;
-    }
-
-    const double a = 1.0 / (1.0 + N.z);
-    const double b = -N.x * N.y * a;
-
-    T = glm::dvec3(1.0 - N.x * N.x * a, b, -N.x);
-    B = glm::dvec3(b, 1.0 - N.y * N.y * a, -N.y);
-}
-
+#include "shading/auxhiliary_methods.h"
 
 GGXMaterial::GGXMaterial(const std::shared_ptr<Texture>& albedo)
 {
@@ -41,15 +20,16 @@ GGXMaterial::GGXMaterial(Params params) : m_params(std::move(params))
 
 Color GGXMaterial::albedo(const HitRecord& rec) const
 {
+    if (!m_params.albedo)
+        return Color(0.0);
+
     return this->m_params.albedo->value(rec.uv, rec.position);
 }
 
 double GGXMaterial::roughness(const HitRecord& rec) const
 {
     if (!m_params.roughness)
-    {
         return 0.5;
-    }
 
     return std::max(
         this->m_params.roughness->value(rec.uv, rec.position).x, 0.03);
@@ -63,61 +43,60 @@ double GGXMaterial::metallic(const HitRecord& rec) const
 Color GGXMaterial::emission(const HitRecord& rec) const
 {
     if (!m_params.emission)
-    {
         return Color(0.0);
-    }
 
     return this->m_params.emission->value(rec.uv, rec.position);
 }
 
-glm::dvec3 GGXMaterial::normal(const HitRecord& rec) const
+Color GGXMaterial::ambient_occlusion(const HitRecord& rec) const
+{
+    if (!m_params.ambient_occlusion)
+        return Color(1.0);
+
+    return this->m_params.ambient_occlusion->value(rec.uv, rec.position);
+}
+
+
+dvec3 GGXMaterial::normal(const HitRecord& rec) const
 {
     if (!m_params.normal)
         return rec.geometricNormal; // no normal map — use geometric normal
 
     // Sample tangent-space normal and remap [0,1] → [-1,1]
     const Color raw = m_params.normal->value(rec.uv, rec.position);
-    const glm::dvec3 n = glm::dvec3(raw.r, raw.g, raw.b) * 2.0 - 1.0;
+    const dvec3 n = dvec3(raw.r, raw.g, raw.b) * 2.0 - 1.0;
 
     // Transform from tangent space to world space via TBN
-    const glm::dvec3 N = glm::normalize(n);
-    glm::dvec3 T, B;
+    const dvec3 N = normalize(n);
+    dvec3 T, B;
     buildTBN(N, T, B);
 
-    return glm::normalize(T * n.x + B * n.y + N * n.z);
+    return normalize(T * n.x + B * n.y + N * n.z);
 }
 
-double schlick(double cosTheta, double etaRatio)
+MaterialSample GGXMaterial::sample(const HitRecord& rec, const dvec3& wo) const
 {
-    double r0 = (1.0 - etaRatio) / (1.0 + etaRatio);
-    r0 *= r0;
-    return r0 + (1.0 - r0) * std::pow(1.0 - cosTheta, 5.0);
-}
-
-MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) const
-{
-    const glm::dvec3 N = normal(rec);
+    const dvec3 N = normal(rec);
     const Color alb = albedo(rec);
     const Color emi = emission(rec);
 
     // ── Transmission path — dark albedo acts as glass ─────────────────────
-    double lum = 0.2126 * alb.r + 0.7152 * alb.g + 0.0722 * alb.b;
-    if (lum < 0.05)
+    if (double lum = toGrayscale(alb); lum < 0.09)
     {
-        constexpr double ior = 1.5;
+        constexpr double ior = 2.42;
 
         bool frontFace = glm::dot(wo, N) > 0.0;
         double etaRatio = frontFace ? (1.0 / ior) : ior;
-        glm::dvec3 n = frontFace ? N : -N;
+        dvec3 n = frontFace ? N : -N;
 
-        glm::dvec3 unitWo = glm::normalize(wo);
-        double cosTheta = std::min(glm::dot(unitWo, n), 1.0);
+        dvec3 unitWo = normalize(wo);
+        double cosTheta = clamp(glm::dot(unitWo, n), 0.0, 1.0);
         double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
 
         bool tir = etaRatio * sinTheta > 1.0;
         double reflectance = schlick(cosTheta, etaRatio);
 
-        glm::dvec3 wi;
+        dvec3 wi;
         if (tir || reflectance > randomDouble())
         {
             wi = glm::reflect(-unitWo, n);
@@ -127,10 +106,8 @@ MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) c
             wi = glm::refract(-unitWo, n, etaRatio);
         }
 
-        // Blend toward tinted transmission — dark albedo tints the glass
-        Color transmitColor = lum < 0.01
-                                  ? Color(1.0) // fully clear
-                                  : glm::mix(emi, alb, lum / 0.05); // slight tint
+        Color transmitColor = lum < 0.01 ? Color(1.0)
+                                  : glm::mix(emi, alb, lum / 0.1);
 
         MaterialSample ms;
         ms.wi = wi;
@@ -146,7 +123,7 @@ MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) c
     const double r1 = randomDouble();
     const double r2 = randomDouble();
 
-    glm::dvec3 T, B;
+    dvec3 T, B;
     buildTBN(N, T, B);
 
     double m_roughness = roughness(rec);
@@ -154,14 +131,14 @@ MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) c
     const double theta = std::atan(a * std::sqrt(r1) / std::sqrt(1.0 - r1));
     const double phi = 2.0 * constants::kPi * r2;
 
-    const glm::dvec3 localH = {
-        std::sin(theta) * std::cos(phi),
-        std::sin(theta) * std::sin(phi),
-        std::cos(theta)
-    };
 
-    const glm::dvec3 H = glm::normalize(T * localH.x + B * localH.y + N * localH.z);
-    const glm::dvec3 wi = glm::normalize(2.0 * glm::dot(wo, H) * H - wo);
+    const double sinTheta = std::sin(theta);
+    const double cosTheta = std::cos(theta);
+
+    const dvec3 localH = {sinTheta * std::cos(phi), sinTheta * std::sin(phi), cosTheta};
+
+    const dvec3 H = normalize(T * localH.x + B * localH.y + N * localH.z);
+    const dvec3 wi = normalize(2.0 * glm::dot(wo, H) * H - wo);
 
     MaterialSample ms;
     ms.wi = wi;
@@ -173,6 +150,7 @@ MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) c
     if (NdotL <= 0.0 || NdotV <= 0.0)
     {
         ms.weight = Color(0.0);
+
         return ms;
     }
 
@@ -183,17 +161,25 @@ MaterialSample GGXMaterial::sample(const HitRecord& rec, const glm::dvec3& wo) c
         return ms;
     }
 
+    ms.pdf = p;  // add this
     ms.weight = evaluate(rec, wo, wi) / p;
     ms.valid = true;
+
+    // Guard against weight spikes from near-zero pdf
+    if (glm::any(glm::isnan(ms.weight)) || glm::any(glm::isinf(ms.weight)))
+    {
+        ms.valid = false;
+    }
+
     return ms;
 }
 
 double GGXMaterial::pdf(const HitRecord& rec,
-                        const glm::dvec3& wo,
-                        const glm::dvec3& wi) const
+                        const dvec3& wo,
+                        const dvec3& wi) const
 {
-    const glm::dvec3 N = glm::normalize(rec.geometricNormal);
-    const glm::dvec3 H = glm::normalize(wo + wi); // half vector
+    const dvec3 N = normalize(rec.geometricNormal);
+    const dvec3 H = normalize(wo + wi); // half vector
 
     const double NdotH = std::max(glm::dot(N, H), 0.0);
     const double VdotH = std::max(glm::dot(wo, H), 0.0);
@@ -212,11 +198,11 @@ double GGXMaterial::pdf(const HitRecord& rec,
 }
 
 Color GGXMaterial::evaluate(const HitRecord& rec,
-                            const glm::dvec3& wo,
-                            const glm::dvec3& wi) const
+                            const dvec3& wo,
+                            const dvec3& wi) const
 {
-    const glm::dvec3 N = normal(rec);
-    const glm::dvec3 H = glm::normalize(wo + wi); // half-vector
+    const dvec3 N = normal(rec);
+    const dvec3 H = normalize(wo + wi); // half-vector
 
     const double NoV = std::max(glm::dot(N, wo), 0.0);
     const double NoL = std::max(glm::dot(N, wi), 0.0);
@@ -233,20 +219,23 @@ Color GGXMaterial::evaluate(const HitRecord& rec,
 
     // --- D: GGX Normal Distribution ---
     const double denom = (NoH * NoH * (a2 - 1.0) + 1.0);
-    if (denom < 1e-6) return Color(0.0); // prevent D blowing up
+    if (denom < constants::kEpsilon)
+        return Color(0.0); // prevent D blowing up
+
     const double D = a2 / (constants::kPi * denom * denom);
 
     // --- F: Fresnel-Schlick ---
     // Dialectrics use F0 = 0.04; metals use the albedo as F0
     const Color F0 = glm::mix(Color(0.04), baseColor, m);
-    const Color F = F0 + (Color(1.0) - F0) * std::pow(1.0 - VoH, 5.0);
+    const Color F = schlick(F0, VoH);
 
-    // --- G: Smith GGX Geometry (Schlick-Beckmann) ---
+    // --- G: Smith GGX Geometry---
     auto G1 = [&](const double NdotV) -> double
     {
-        double k = (a + 1.0);
-        k = (k * k) / 8.0;
-        return NdotV / (NdotV * (1.0 - k) + k);
+        double safeDot = std::max(NdotV, 1e-7); // guard against grazing fp error
+        double a2      = a * a;
+        double NdotV2  = safeDot * safeDot;
+        return 2.0 * safeDot / (safeDot + std::sqrt(a2 + (1.0 - a2) * NdotV2));
     };
     const double G = G1(NoV) * G1(NoL);
 
@@ -258,5 +247,9 @@ Color GGXMaterial::evaluate(const HitRecord& rec,
     // Diffuse term is very similar to lambert, but metals lack it
     const Color diffuse = (1.0 - m) * baseColor / constants::kPi;
 
-    return (diffuse + specular);
+    const Color ao_value = ambient_occlusion(rec);
+    
+
+    return ao_value * diffuse + specular;
+
 }

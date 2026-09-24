@@ -63,9 +63,9 @@ const vec3& translation, const vec3& scale, const quat& rotation)
                 return {-0.1, -0.1};
             };
 
-            glm::dvec3 a = getVertex(0);
-            glm::dvec3 b = getVertex(1);
-            glm::dvec3 c = getVertex(2);
+            dvec3 a = getVertex(0);
+            dvec3 b = getVertex(1);
+            dvec3 c = getVertex(2);
 
             glm::dvec2 uvA = getUV(0);
             glm::dvec2 uvB = getUV(1);

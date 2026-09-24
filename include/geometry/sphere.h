@@ -11,7 +11,7 @@
 
 class Sphere : public Primitive {
 public:
-    Sphere(const glm::dvec3& center,
+    Sphere(const dvec3& center,
            double radius,
            std::shared_ptr<Material> material);
 
@@ -20,7 +20,7 @@ public:
     BBox bounds() const override;
 
 private:
-    glm::dvec3 m_center;
+    dvec3 m_center;
     double m_radius;
     std::shared_ptr<Material> m_material;
 };

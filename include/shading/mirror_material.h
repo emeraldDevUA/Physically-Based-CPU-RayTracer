@@ -16,15 +16,15 @@ public:
         : m_reflectance(reflectance) {}
 
     Color evaluate(const HitRecord& rec,
-               const glm::dvec3& wo,
-               const glm::dvec3& wi) const override;
+               const dvec3& wo,
+               const dvec3& wi) const override;
 
     MaterialSample sample(const HitRecord& rec,
-                          const glm::dvec3& wo) const override;
+                          const dvec3& wo) const override;
 
     double pdf(const HitRecord& rec,
-               const glm::dvec3& wo,
-               const glm::dvec3& wi) const override;
+               const dvec3& wo,
+               const dvec3& wi) const override;
 
     bool isDelta() const override;
 

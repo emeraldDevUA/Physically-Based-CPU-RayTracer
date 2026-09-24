@@ -5,10 +5,8 @@
 
 // ── Constructors ──────────────────────────────────────────────────────────────
 
-BBox::BBox()
-    : m_min( std::numeric_limits<double>::max())
-    , m_max(-std::numeric_limits<double>::max())
-{}
+BBox::BBox() : m_min(glm::dvec3(std::numeric_limits<double>::infinity())),
+         m_max(glm::dvec3(-std::numeric_limits<double>::infinity())) {}
 
 BBox::BBox(const glm::dvec3& minCorner, const glm::dvec3& maxCorner)
     : m_min(minCorner)
