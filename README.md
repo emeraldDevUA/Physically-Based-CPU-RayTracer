@@ -207,31 +207,4 @@ accel/      # acceleration structures, such as bbox, BVH, and octree
 ```
 
 
-## Electricity Split
 
-**Total:** €294.71  
-**Price per day:** €3.10221 (Later P)
-
-> Before Johannes moved in: **95 − 71 = 24 days**  
-> After Johannes moved in: **71 days**, split 50/50
-
-### Yurii
-
-$`Yurii_{part}= (95 - 71) × P + (71 × P / 2)`$
-
-
-**Share:** €184.58  
-**Paid:** €300.00
-
-### Johannes
-
-
-$`Johannes_{part}= (71 × P / 2)`$
-
-**Share:** €110.13  
-**Paid:** €100.00
-
-### Settlement
-
-- **Yurii:** €300.00 − €184.58 = **€115.42 back** (Paid from Stadtwerke)
-- **Johannes:** €110.13 − €100.00 = **€10.13 owed**
