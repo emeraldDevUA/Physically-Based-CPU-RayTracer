@@ -45,12 +45,12 @@ bool Sphere::intersect(const Ray& ray, HitRecord& rec) const {
     rec.t = t;
     rec.position = ray.at(t);
 
-    const glm::dvec3 outwardNormal = (rec.position - m_center) / m_radius;
+    const dvec3 outwardNormal = (rec.position - m_center) / m_radius;
     rec.setFaceNormal(ray.direction, outwardNormal);
     rec.material = m_material;
 
     // Spherical UV mapping
-    const glm::dvec3 n = outwardNormal;
+    const dvec3 n = outwardNormal;
 
 
     const double theta = std::acos(-n.y);

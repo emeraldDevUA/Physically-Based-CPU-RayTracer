@@ -10,14 +10,14 @@
 #include "render/whitted_integrator.h"
 
 
-constexpr int width = 640;
-constexpr int height = 480;
-constexpr int samplesPerPixel = 1;
+constexpr int width = 1920;
+constexpr int height = 1080;
+constexpr int samplesPerPixel = 2048;
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
 
-    const auto [scene, camera] = SceneFactory::createStarterScene( width, height);
+    const auto [scene, camera] = SceneFactory::createDielectricScene( width, height);
 
     const WhittedIntegrator integrator(35
         , Color(0.08, 0.08, 0.10));

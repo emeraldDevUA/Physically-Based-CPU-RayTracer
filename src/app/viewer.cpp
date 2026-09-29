@@ -1,77 +1,66 @@
-// Viewer implementation for the minimal starter.
-// The render is done once in the constructor, and the resulting QImage is drawn.
-
 #include "app/viewer.h"
-
 #include <QPainter>
 #include <chrono>
 
 #include "io/image.h"
 #include "render/renderer.h"
 
-Viewer::Viewer(const int width,
-               const int height,
-               const Scene& scene,
-               const Camera& camera,
-               const Integrator& integrator,
-               const int samplesPerPixel,
-               QLabel* durationLabel,
-               QWidget* parent)
+Viewer::Viewer(const int width, const int height,
+               const Scene& scene, const Camera& camera,
+               const Integrator& integrator, const int samplesPerPixel,
+               QLabel* durationLabel, QWidget* parent)
     : QWidget(parent),
-      m_width(width),
-      m_height(height),
-      m_scene(scene),
-      m_camera(camera),
-      m_integrator(integrator),
+      m_width(width), m_height(height),
+      m_scene(scene), m_camera(camera), m_integrator(integrator),
       m_samplesPerPixel(samplesPerPixel),
       m_durationLabel(durationLabel),
-      m_image(width, height, QImage::Format_RGB32) {
-    renderScene();
+      m_image(width, height, QImage::Format_RGB32)
+{
+    connect(this, &Viewer::frameReady, this, &Viewer::onFrameReady, Qt::QueuedConnection);
+
+    m_renderThread = std::thread([this]() {
+        Image image(m_width, m_height);
+        const Renderer renderer(m_samplesPerPixel);
+
+        renderer.render(m_scene, m_camera, m_integrator, image,
+            [this](const Image& img, const int samplesDone, const double elapsedSeconds) {
+                if (m_cancelled.load()) return;
+                emit frameReady(img.qimage().copy(), samplesDone, elapsedSeconds);
+            });
+    });
 }
 
-void Viewer::renderScene() {
-    const auto start = std::chrono::high_resolution_clock::now();
+Viewer::~Viewer() {
+    stopRaytrace();
+    if (m_renderThread.joinable())
+        m_renderThread.join();
+}
 
-    Image image(m_width, m_height);
-    const Renderer renderer(m_samplesPerPixel);
-    renderer.render(m_scene, m_camera, m_integrator, image);
-
-    m_image = image.qimage();
-
-    const auto end = std::chrono::high_resolution_clock::now();
-    const auto durationMs =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+void Viewer::onFrameReady(QImage image, int samplesDone, double elapsedSeconds) {
+    m_image = std::move(image);
 
     if (m_durationLabel) {
         m_durationLabel->setText(
             QString("Resolution:%1 x %2 Render time: %3 seconds %4 samples per pixel)")
                 .arg(m_image.width()).arg(m_image.height())
-                .arg(static_cast<float>(durationMs)/1000.0)
-                .arg(m_samplesPerPixel)
+                .arg(static_cast<float>(elapsedSeconds))
+                .arg(samplesDone)
         );
     }
-
     update();
 }
 
-const QImage& Viewer::getImage() const {
-    return m_image;
-}
+const QImage& Viewer::getImage() const { return m_image; }
 
 void Viewer::stopRaytrace() {
-    // No background rendering thread is used in the minimal starter.
-    // This method is kept for interface compatibility and future extension.
+    m_cancelled.store(true);
 }
 
 void Viewer::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.fillRect(rect(), Qt::black);
-
-    if (!m_image.isNull()) {
+    if (!m_image.isNull())
         painter.drawImage(rect(), m_image);
-    }
 }
 
-QSize Viewer::sizeHint() const {
-    return {m_width, m_height};
-}
+QSize Viewer::sizeHint() const { return {m_width, m_height}; }

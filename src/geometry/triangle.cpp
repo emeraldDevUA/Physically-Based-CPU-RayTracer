@@ -7,9 +7,9 @@
 #include <glm/mat4x4.hpp>
 #include "core/constants.h"
 
-Triangle::Triangle(const glm::dvec3& a,
-                   const glm::dvec3& b,
-                   const glm::dvec3& c,
+Triangle::Triangle(const dvec3& a,
+                   const dvec3& b,
+                   const dvec3& c,
                    std::shared_ptr<Material> material)
     : m_a(a), m_b(b), m_c(c), m_material(std::move(material))
 {
@@ -21,9 +21,9 @@ Triangle::Triangle(const glm::dvec3& a,
 }
 
 
-Triangle::Triangle(const glm::dvec3& a,
-                   const glm::dvec3& b,
-                   const glm::dvec3& c,
+Triangle::Triangle(const dvec3& a,
+                   const dvec3& b,
+                   const dvec3& c,
                    const glm::dvec2& uv_a,
                    const glm::dvec2& uv_b,
                    const glm::dvec2& uv_c,
@@ -45,13 +45,13 @@ void Triangle::update_transformation()
     m_ct = vec3(q * (vec3(m_c) * scale)) + translation;
 }
 
-void Triangle::set_translation(const glm::dvec3& _translation)
+void Triangle::set_translation(const dvec3& _translation)
 {
     this->translation = _translation;
     update_transformation();
 }
 
-void Triangle::set_scale(const glm::dvec3& _scale)
+void Triangle::set_scale(const dvec3& _scale)
 {
     this->scale = _scale;
     update_transformation();

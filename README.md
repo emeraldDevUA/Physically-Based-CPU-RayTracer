@@ -1,17 +1,49 @@
 # Global Illumination Methods
+
+A physically based ray tracer built as a project for the Global Illumination course at the University of Konstanz. Starting from a minimal starter framework, I implemented the core rendering pipeline and a set of physically based shading and lighting features, along with performance optimizations to keep render times practical at higher sample counts.
+
+### What I implemented
+
+**Shading models**
+- Cook-Torrance BRDF (microfacet-based specular reflection)
+- Blinn-Phong BRDF
+- Dielectric material (refraction / transmission)
+- Mirror (perfect specular reflection)
+
+**Lighting**
+- Point lights
+- Area lights
+
+**Performance**
+- Multi-threaded tiled rendering with OpenMP
+- Bounding Volume Hierarchy (BVH) for accelerated ray-scene intersection, substantially reducing render times over brute-force intersection testing
+
+**Interactivity**
+- Progressive rendering with dynamic viewport updates: the render runs on a background thread and streams intermediate results (per sample-checkpoint) back to the Qt GUI via signals/slots, so the image refines live in the window instead of only appearing once the full render finishes
+
+### Sample Renders
+
+<p align="center">
+  <img src="assets/images/render_1.png" width="49%" />
+  <img src="assets/images/render_2.png" width="49%" />
+  <br/>
+  <img src="assets/images/render_3.png" width="49%" />
+  <img src="assets/images/render_4.png" width="49%" />
+</p>
+
 This is a minimal global illumination / ray tracing starter project for course exercises. The project is currently built with `C++20 + CMake + Qt5 Widgets`. When launched, it opens a GUI window and displays the rendered result of the default scene.
 
 The default entry point is `main.cpp`, which currently:
 
 - creates a test scene via `SceneFactory`
-- uses `DirectLightingIntegrator` for direct lighting
+- uses `WhittedLightingIntegrator` for direct lighting
 - displays the image through `Gui` / `Viewer`
 ## Quick Start
 
 The repository already includes `glm`, so the main external requirements are:
 
 - `CMake 3.10+`
-- a compiler with `C++20` support
+- a compiler with `C++17` support
 - `Qt5 Widgets`
 
 The standard build flow is:
@@ -126,47 +158,47 @@ If you add new `.cpp` or `.h` files, make sure to update `CMakeLists.txt` as wel
 The project follows roughly this flow:
 
 1. `Scene Setup`
-   - Geometry
-   - Materials
-   - Lights
-   - Camera
+    - Geometry
+    - Materials
+    - Lights
+    - Camera
 
 2. `Image Sampling`
-   - choose pixel
-   - choose sample position(s) within the pixel
+    - choose pixel
+    - choose sample position(s) within the pixel
 
 3. `Primary Ray Generation`
-   - generate a camera ray for the current sample
+    - generate a camera ray for the current sample
 
 4. `Ray-Scene Intersection`
-   - intersect the ray with scene geometry
+    - intersect the ray with scene geometry
 
 5. `Visible Surface Determination`
-   - choose the closest valid hit
-   - if no hit: return background / environment
+    - choose the closest valid hit
+    - if no hit: return background / environment
 
 6. `Surface Interaction Construction`
-   - build hit record
-   - position
-   - normal
-   - uv / local surface data
-   - material reference
+    - build hit record
+    - position
+    - normal
+    - uv / local surface data
+    - material reference
 
 7. `Radiance Evaluation`
-   - compute outgoing radiance along the current viewing direction
-   - possible subcases:
-     - Direct Illumination
-     - Material / BSDF Evaluation
-     - Light Visibility Test
-     - Secondary Ray Generation
-     - Recursive / Stochastic Light Transport
-     - Volume / Medium Interaction
+    - compute outgoing radiance along the current viewing direction
+    - possible subcases:
+        - Direct Illumination
+        - Material / BSDF Evaluation
+        - Light Visibility Test
+        - Secondary Ray Generation
+        - Recursive / Stochastic Light Transport
+        - Volume / Medium Interaction
 
 8. `Image Update and Output`
-   - accumulate sample contribution
-   - write to pixel
-   - gamma correction / tone mapping
-   - display / save
+    - accumulate sample contribution
+    - write to pixel
+    - gamma correction / tone mapping
+    - display / save
 
 The default starter execution order can be summarized as:
 
@@ -205,6 +237,3 @@ accel/      # acceleration structures, such as bbox, BVH, and octree
 ├── CMakeLists.txt  build configuration
 └── main.cpp        program entry point
 ```
-
-
-
