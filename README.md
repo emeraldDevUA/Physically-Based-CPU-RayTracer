@@ -24,11 +24,11 @@ A physically based ray tracer built as a project for the Global Illumination cou
 ### Sample Renders
 
 <p align="center">
-  <img src="assets/images/render_1.png" width="49%" />
-  <img src="assets/images/render_2.png" width="49%" />
+  <img src="assets/images/render_1.png" width="95%" />
+  <img src="assets/images/render_2.png" width="95%" />
   <br/>
-  <img src="assets/images/render_3.png" width="49%" />
-  <img src="assets/images/render_4.png" width="49%" />
+  <img src="assets/images/render_3.png" width="95%" />
+  <img src="assets/images/render_4.png" width="95%" />
 </p>
 
 This is a minimal global illumination / ray tracing starter project for course exercises. The project is currently built with `C++20 + CMake + Qt5 Widgets`. When launched, it opens a GUI window and displays the rendered result of the default scene.
